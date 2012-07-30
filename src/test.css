@@ -1,0 +1,19 @@
+.karaoke {
+	color: blue;
+	font-family: century, serif;
+	font-size: 150%;
+	margin-top: 1em;
+	position: relative;
+}
+
+.view_window {
+	position: absolute;
+	width: 0%;
+	overflow: hidden;
+	left: 0;
+	top: 0;
+}
+
+.overwrap_text {
+	color: red;
+}
