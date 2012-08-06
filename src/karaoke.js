@@ -53,26 +53,6 @@ function(){
 		div_karaoke.find('div.karaoke_word').each(append_view);
 	};
 
-	var create_animation = function(view, start, timespan) {
-		view = $(view);
-		var interval = 20; // ms
-		var step_count = timespan / interval;
-		var inc = 100 / step_count;
-		var percent = 0;
-		setTimeout(
-			function(){
-				var tid = setInterval(
-					function(){
-						percent += inc;
-						if(percent >= 100){
-							percent = 100;
-							clearInterval(tid);
-						}
-						view.css('width', percent+'%');
-					}, interval);
-			}, start);
-	};
-
 	var canonicalize_lap_times = function(lap_data) {
 		var laps = $(lap_data).text().split(/,/);
 		var new_laps = [];
@@ -85,13 +65,22 @@ function(){
 	var start_animation = function(div_karaoke, lap_data) {
 		var views = div_karaoke.find('div.view_window');
 		var lap_times = canonicalize_lap_times(lap_data);
-		var i = 0;
-		views.each(
-			function(){
-				var lap = lap_times[i+1] - lap_times[i];
-				create_animation($(this), lap_times[i], lap);
-				++i;
-			});
+		var func = undefined;
+		for (var i = views.length-1; i >= 0; --i){
+			func = (
+				function(view, next_func, timespan){
+					return function(){
+						view.animate(
+							{ width: '100%' },
+							{
+								duration: timespan,
+								complete: next_func
+							}
+						);
+					};
+				})($(views[i]), func, lap_times[i+1] - lap_times[i]);
+		}
+		func();
 	};
 
 	load_event();
