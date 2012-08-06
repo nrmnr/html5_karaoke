@@ -4,16 +4,22 @@
 	font-size: 150%;
 	margin-top: 1em;
 	position: relative;
+	clear: both;
 }
-
+.karaoke_word {
+	position: relative;
+	margin-left: 1ex;
+	float: left;
+}
 .view_window {
+	margin: 0;
 	position: absolute;
 	width: 0%;
 	overflow: hidden;
 	left: 0;
 	top: 0;
 }
-
 .overwrap_text {
+	margin: 0;
 	color: red;
 }

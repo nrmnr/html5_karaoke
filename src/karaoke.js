@@ -20,42 +20,78 @@ function(){
 				// console.log(t);
 				create_karaoke(t);
 			});
+		var laps = $(xml_data).find('lap');
+		var i = 0;
 		$('div.karaoke').each(
 			function() {
-				overwrap_karaoke($(this));
+				var div_karaoke = $(this);
+				overwrap_karaoke(div_karaoke);
+				start_animation(div_karaoke, laps[i]);
+				++i;
 			});
-		start_animation();
 	};
 
 	var create_karaoke = function(text) {
-		board.append('<div name="karaoke" class="karaoke"><div>'+text+'</div></div>');
+		var words = text.split(/ /);
+		// console.log(words.length);
+		var tags = [];
+		for ( var i = 0; i < words.length; ++i ) {
+			tags.push('<div class="karaoke_word">' + words[i] + '</div>');
+		}
+		board.append('<div name="karaoke" class="karaoke">'+tags.join('')+'</div>');
 	};
 
-	var overwrap_karaoke = function(elm) {
-		var t = elm.find('div:first').text();
-		//console.log(elm);
-		elm.append('<div class="view_window"><div class="overwrap_text"></div></div>');
-		var ot = elm.find('div.overwrap_text');
-		ot.text(t);
-		ot.css('width', elm.css('width'));
-	};
-
-	var create_view_animate_func = function(view, inc) {
-		view = $(view);
-		// console.log(view);
-		var percent = 0;
-		return function() {
-			//console.log(percent);
-			percent += inc;
-			if (percent > 100) percent = 0;
-			view.css('width', percent+'%');
+	var overwrap_karaoke = function(div_karaoke) {
+		var append_view = function() {
+			var karaoke_word = $(this);
+			var t = karaoke_word.text();
+			$(this).append('<div class="view_window"><div class="overwrap_text" /></div>')
+			var ot = karaoke_word.find('div.overwrap_text');
+			ot.text(t);
+			ot.css('width', karaoke_word.css('width'));
 		};
+		div_karaoke.find('div.karaoke_word').each(append_view);
 	};
 
-	var start_animation = function() {
-		var views = board.find('div.view_window');
-		setInterval(create_view_animate_func(views[0],1), 100);
-		setInterval(create_view_animate_func(views[1],1), 100);
+	var create_animation = function(view, start, timespan) {
+		view = $(view);
+		var interval = 20; // ms
+		var step_count = timespan / interval;
+		var inc = 100 / step_count;
+		var percent = 0;
+		setTimeout(
+			function(){
+				var tid = setInterval(
+					function(){
+						percent += inc;
+						if(percent >= 100){
+							percent = 100;
+							clearInterval(tid);
+						}
+						view.css('width', percent+'%');
+					}, interval);
+			}, start);
+	};
+
+	var canonicalize_lap_times = function(lap_data) {
+		var laps = $(lap_data).text().split(/,/);
+		var new_laps = [];
+		for (var i = 0; i < laps.length; ++i) {
+			new_laps.push(laps[i] * 1000);
+		}
+		return new_laps;
+	};
+
+	var start_animation = function(div_karaoke, lap_data) {
+		var views = div_karaoke.find('div.view_window');
+		var lap_times = canonicalize_lap_times(lap_data);
+		var i = 0;
+		views.each(
+			function(){
+				var lap = lap_times[i+1] - lap_times[i];
+				create_animation($(this), lap_times[i], lap);
+				++i;
+			});
 	};
 
 	load_event();
