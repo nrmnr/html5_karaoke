@@ -14,6 +14,7 @@ function(){
 			});
 	};
 
+	var timer_id;
 	var initialize = function(xml_data) {
 		$(xml_data).find('file').each(
 			function(){
@@ -26,33 +27,45 @@ function(){
 					function() {
 						var div_karaoke = $(this);
 						overwrap_karaoke(div_karaoke);
-						// start_animation(div_karaoke, laps[i]);
 						++i;
 					});
 				var audio_file = file.attr('src');
-				init_audio(audio_file, $('div.karaoke:first'), laps);
-				audio.play();
+				init_audio(audio_file);
+				start_karaoke($('div.karaoke:first'), laps);
 			});
 	};
 
-	var timeupdate_event = undefined;
-	var init_audio = function(audio_file, div_karaoke, laps) {
+	var init_audio = function(audio_file) {
 		audio.src = 'data/' + audio_file;
 		audio.load();
-		timeupdate_event = create_timeupdate_event(div_karaoke, laps);
-		audio.addEventListener('timeupdate', timeupdate_event);
 		audio.addEventListener("ended", ended_event);
 	};
 
-	var create_timeupdate_event = function(div_karaoke, laps){
-		var views = div_karaoke.find('div.view_window');
+	var ended_event = function(){
+		clearInterval(timer_id);
+		audio.removeEventListener('ended', ended_event);
+	};
+
+	var start_karaoke = function(div_karaoke, laps){
+		var views = (
+			function(){
+				var v = [];
+				div_karaoke.find('div.view_window').each(
+					function(){
+						v.push($(this));
+					});
+				return v;
+			})();
 		var lap_times = canonicalize_lap_times(laps);
-		return function(){
+		var start = 0;
+		var func = function(){
 			var c = audio.currentTime * 1000 + 200; // to offset the interval
-			for (var i = 0; i < views.length; ++i) {
-				var view = $(views[i]);
+			for (var i = start; i < views.length; ++i) {
+				var view = views[i];
 				if (c >= lap_times[i+1]) {
 					view.css('width', '100%');
+					start = i + 1;
+					console.log(start);
 				} else if(c < lap_times[i+1]) {
 					var time_span = lap_times[i+1] - lap_times[i];
 					var par = c * 100 / time_span;
@@ -60,12 +73,9 @@ function(){
 					break;
 				}
 			}
-		}
-	};
-
-	var ended_event = function(){
-		audio.removeEventListener('timeupdate', timeupdate_event);
-		audio.removeEventListener('ended', ended_event);
+		};
+		timer_id = setInterval(func, 10);
+		audio.play();
 	};
 
 	var create_karaoke = function(text) {
