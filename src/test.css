@@ -23,3 +23,6 @@
 	margin: 0;
 	color: red;
 }
+.audio_area {
+	display: hidden;
+}

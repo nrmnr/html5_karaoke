@@ -1,6 +1,7 @@
 $(
 function(){
 	var board = $('#board');
+	var audio = $('#audio_elm').get(0);
 
 	var load_event = function() {
 		var file = 'data/data.xml';
@@ -14,21 +15,30 @@ function(){
 	};
 
 	var initialize = function(xml_data) {
-		$(xml_data).find('text').each(
-			function() {
-				var t = $(this).text();
-				// console.log(t);
-				create_karaoke(t);
+		$(xml_data).find('file').each(
+			function(){
+				var file = $(this);
+				var text = file.find('text:first').text();
+				create_karaoke(text);
+				var laps = file.find('lap:first');
+				var i = 0;
+				$('div.karaoke').each(
+					function() {
+						var div_karaoke = $(this);
+						overwrap_karaoke(div_karaoke);
+						start_animation(div_karaoke, laps[i]);
+						++i;
+					});
+				var audio_file = file.attr('src');
+				init_audio(audio_file);
 			});
-		var laps = $(xml_data).find('lap');
-		var i = 0;
-		$('div.karaoke').each(
-			function() {
-				var div_karaoke = $(this);
-				overwrap_karaoke(div_karaoke);
-				start_animation(div_karaoke, laps[i]);
-				++i;
-			});
+	};
+
+	var init_audio = function(file) {
+		console.log(file);
+		audio.src = 'data/' + file;
+		audio.load();
+		audio.play();
 	};
 
 	var create_karaoke = function(text) {
