@@ -34,18 +34,22 @@ function(){
 	var create_karaoke = function(text) {
 		var words = text.split(/ /);
 		// console.log(words.length);
-		var tags = [];
+		var tags = '';
 		for ( var i = 0; i < words.length; ++i ) {
-			tags.push('<div class="karaoke_word">' + words[i] + '</div>');
+			tags += '<div class="karaoke_word">' + words[i] + '</div>';
 		}
-		board.append('<div name="karaoke" class="karaoke">'+tags.join('')+'</div>');
+		board.append('<div name="karaoke" class="karaoke">' + tags + '</div>');
 	};
 
+	/**
+	 * カラオケの上にかぶせる赤字のdivを生成
+	 * div.view_windowを表示領域としてはみ出し部分は非表示
+	 */
 	var overwrap_karaoke = function(div_karaoke) {
 		var append_view = function() {
 			var karaoke_word = $(this);
 			var t = karaoke_word.text();
-			$(this).append('<div class="view_window"><div class="overwrap_text" /></div>')
+			karaoke_word.append('<div class="view_window"><div class="overwrap_text" /></div>')
 			var ot = karaoke_word.find('div.overwrap_text');
 			ot.text(t);
 			ot.css('width', karaoke_word.css('width'));
@@ -65,6 +69,11 @@ function(){
 	var start_animation = function(div_karaoke, lap_data) {
 		var views = div_karaoke.find('div.view_window');
 		var lap_times = canonicalize_lap_times(lap_data);
+		/**
+		 * アニメーションの連鎖
+		 * アニメーション設定のcompleteに
+		 * 次のアニメーションを起動する関数をセット
+		 */
 		var func = undefined;
 		for (var i = views.length-1; i >= 0; --i){
 			func = (
