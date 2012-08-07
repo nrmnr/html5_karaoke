@@ -26,19 +26,46 @@ function(){
 					function() {
 						var div_karaoke = $(this);
 						overwrap_karaoke(div_karaoke);
-						start_animation(div_karaoke, laps[i]);
+						// start_animation(div_karaoke, laps[i]);
 						++i;
 					});
 				var audio_file = file.attr('src');
-				init_audio(audio_file);
+				init_audio(audio_file, $('div.karaoke:first'), laps);
+				audio.play();
 			});
 	};
 
-	var init_audio = function(file) {
-		console.log(file);
-		audio.src = 'data/' + file;
+	var timeupdate_event = undefined;
+	var init_audio = function(audio_file, div_karaoke, laps) {
+		audio.src = 'data/' + audio_file;
 		audio.load();
-		audio.play();
+		timeupdate_event = create_timeupdate_event(div_karaoke, laps);
+		audio.addEventListener('timeupdate', timeupdate_event);
+		audio.addEventListener("ended", ended_event);
+	};
+
+	var create_timeupdate_event = function(div_karaoke, laps){
+		var views = div_karaoke.find('div.view_window');
+		var lap_times = canonicalize_lap_times(laps);
+		return function(){
+			var c = audio.currentTime * 1000 + 200; // to offset the interval
+			for (var i = 0; i < views.length; ++i) {
+				var view = $(views[i]);
+				if (c >= lap_times[i+1]) {
+					view.css('width', '100%');
+				} else if(c < lap_times[i+1]) {
+					var time_span = lap_times[i+1] - lap_times[i];
+					var par = c * 100 / time_span;
+					view.css('width', par + '%');
+					break;
+				}
+			}
+		}
+	};
+
+	var ended_event = function(){
+		audio.removeEventListener('timeupdate', timeupdate_event);
+		audio.removeEventListener('ended', ended_event);
 	};
 
 	var create_karaoke = function(text) {
