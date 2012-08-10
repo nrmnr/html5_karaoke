@@ -1,5 +1,6 @@
 $(
 function(){
+	window.console = window.console || { log: function(){} };
 	var board = $('#board');
 	var audio = $('#audio_elm').get(0);
 
