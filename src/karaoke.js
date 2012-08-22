@@ -32,7 +32,10 @@ function(){
 					});
 				var audio_file = file.attr('src');
 				init_audio(audio_file);
-				start_karaoke($('div.karaoke:first'), laps);
+				$('#btn_start').click(
+					function(){
+						start_karaoke($('div.karaoke:first'), laps);
+					});
 			});
 	};
 
@@ -53,6 +56,7 @@ function(){
 				var v = [];
 				div_karaoke.find('div.view_window').each(
 					function(){
+						$(this).css('width','0%');
 						v.push($(this));
 					});
 				return v;
